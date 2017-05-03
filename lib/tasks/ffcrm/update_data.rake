@@ -210,16 +210,14 @@ in a console and continue. This is strongly discouraged. You have been warned!
       # SELECT "addresses".* FROM "addresses"
       #    WHERE (("addresses"."country" = 'AU' OR "addresses"."country" = 'Australia'))
       convert_table.each do |ct|
-        t = Address.arel_table
-        scope = t[:country].eq(ct[0]) # Australia
-        scope = scope.or(t[:country].eq(ct[1])) # AU
+        table = Address.arel_table
+        scope = table[:country].eq(ct[0]) # Australia
+        scope = scope.or(table[:country].eq(ct[1])) # AU
 
         tmp = Address.where(scope)
         tmp.map { |t| t.country = ct[2] }
 
-        unless tmp.blank?
-          addresses_to_update << tmp
-        end
+        addresses_to_update << tmp unless tmp.blank?
       end
 
       Address.transaction do
@@ -229,8 +227,8 @@ in a console and continue. This is strongly discouraged. You have been warned!
           end
           Setting.have_run_country_migration = true
         rescue Exception => e
-          ActiveRecord::Rollback
           puts e
+          raise ActiveRecord::Rollback
         end
       end
     end

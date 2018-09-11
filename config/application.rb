@@ -12,6 +12,7 @@ require "active_record/railtie"
 require "action_controller/railtie"
 require "action_mailer/railtie"
 require "sprockets/railtie"
+require 'ransack'
 
 # require "rails/test_unit/railtie"
 #
@@ -67,8 +68,6 @@ module FatFreeCRM
 
     # Configure sensitive parameters which will be filtered from the log file.
     config.filter_parameters += [:password, :password_hash, :password_salt, :password_confirmation]
-
-    config.active_record.raise_in_transactional_callbacks = true
   end
 end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -69,7 +71,7 @@ class Lead < ActiveRecord::Base
   exportable
   sortable by: ["first_name ASC", "last_name ASC", "company ASC", "rating DESC", "created_at DESC", "updated_at DESC"], default: "created_at DESC"
 
-  has_ransackable_associations %w(contact campaign tasks tags activities emails addresses comments)
+  has_ransackable_associations %w[contact campaign tasks tags activities emails addresses comments]
   ransack_can_autocomplete
 
   validates_presence_of :first_name, message: :missing_first_name, if: -> { Setting.require_first_names }
@@ -100,13 +102,6 @@ class Lead < ActiveRecord::Base
       self.attributes = params[:lead]
       save
     end
-  end
-
-  # Deprecated: see update_with_lead_counters
-  #----------------------------------------------------------------------------
-  def update_with_permissions(attributes, _users = nil)
-    ActiveSupport::Deprecation.warn "lead.update_with_permissions is deprecated and may be removed from future releases, use user_ids and group_ids inside attributes instead and call lead.update_with_lead_counters"
-    update_with_lead_counters(attributes)
   end
 
   # Update lead attributes taking care of campaign lead counters when necessary.
@@ -168,7 +163,7 @@ class Lead < ActiveRecord::Base
       "#{last_name}, #{first_name}"
     end
   end
-  alias_method :name, :full_name
+  alias name full_name
 
   private
 
@@ -185,7 +180,7 @@ class Lead < ActiveRecord::Base
   # Make sure at least one user has been selected if the lead is being shared.
   #----------------------------------------------------------------------------
   def users_for_shared_access
-    errors.add(:access, :share_lead) if self[:access] == "Shared" && !permissions.any?
+    errors.add(:access, :share_lead) if self[:access] == "Shared" && permissions.none?
   end
 
   ActiveSupport.run_load_hooks(:fat_free_crm_lead, self)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -13,11 +15,11 @@ describe "/contacts/index" do
     assign :per_page, Contact.per_page
     assign :sort_by,  Contact.sort_by
     assign :ransack_search, Contact.ransack
-    login_and_assign
+    login
   end
 
   it "should render a list of contacts if it's not empty" do
-    assign(:contacts, [FactoryGirl.build_stubbed(:contact)].paginate)
+    assign(:contacts, [build_stubbed(:contact)].paginate)
 
     render
     expect(view).to render_template(partial: "_contact")

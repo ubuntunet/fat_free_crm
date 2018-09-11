@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,17 +11,17 @@ describe "/application/_auto_complete" do
   include AccountsHelper
 
   before do
-    login_and_assign
+    login
   end
 
-  [:account, :campaign, :contact, :lead, :opportunity].each do |model|
+  %i[account campaign contact lead opportunity].each do |model|
     it "should render autocomplete list if #{model} matches found" do
       @auto_complete = if model == :lead
-                         FactoryGirl.build_stubbed(:lead, first_name: "Billy", last_name: "Bones", company: "Hello, World!")
+                         build_stubbed(:lead, first_name: "Billy", last_name: "Bones", company: "Hello, World!")
                        elsif model == :contact
-                         FactoryGirl.build_stubbed(:contact, first_name: "Billy", last_name: "Bones")
+                         build_stubbed(:contact, first_name: "Billy", last_name: "Bones")
                        else
-                         FactoryGirl.build_stubbed(model, name: "Hello, World!")
+                         build_stubbed(model, name: "Hello, World!")
       end
       assign(:auto_complete, [@auto_complete])
 

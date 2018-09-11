@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,13 +11,13 @@ describe "/leads/_convert" do
   include LeadsHelper
 
   before do
-    login_and_assign
-    @account = FactoryGirl.build_stubbed(:account)
-    assign(:lead, FactoryGirl.build_stubbed(:lead))
+    login
+    @account = build_stubbed(:account)
+    assign(:lead, build_stubbed(:lead))
     assign(:users, [current_user])
     assign(:account, @account)
     assign(:accounts, [@account])
-    assign(:opportunity, FactoryGirl.build_stubbed(:opportunity))
+    assign(:opportunity, build_stubbed(:opportunity))
   end
 
   it "should render [convert lead] form" do

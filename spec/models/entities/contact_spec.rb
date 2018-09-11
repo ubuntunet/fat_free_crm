@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -39,72 +41,81 @@
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 describe Contact do
-  before { login }
-
   it "should create a new instance given valid attributes" do
     Contact.create!(first_name: "Billy", last_name: "Bones")
   end
 
   describe "Update existing contact" do
     before(:each) do
-      @account = FactoryGirl.create(:account)
-      @contact = FactoryGirl.create(:contact, account: @account)
+      @contact = create(:contact, account: create(:account))
     end
 
     it "should create new account if requested so" do
-      expect {
+      expect do
         @contact.update_with_account_and_permissions(
-        account: { name: "New account" },
-        contact: { first_name: "Billy" }
-      )
-      }.to change(Account, :count).by(1)
+          account: { name: "New account" },
+          contact: { first_name: "Billy" }
+        )
+      end.to change(Account, :count).by(1)
       expect(Account.last.name).to eq("New account")
       expect(@contact.first_name).to eq("Billy")
     end
 
     it "should change account if another account was selected" do
-      @another_account = FactoryGirl.create(:account)
-      expect {
+      @another_account = create(:account)
+      expect do
         @contact.update_with_account_and_permissions(
-        account: { id: @another_account.id },
-        contact: { first_name: "Billy" }
-      )
-      }.not_to change(Account, :count)
+          account: { id: @another_account.id },
+          contact: { first_name: "Billy" }
+        )
+      end.not_to change(Account, :count)
       expect(@contact.account).to eq(@another_account)
       expect(@contact.first_name).to eq("Billy")
     end
 
     it "should drop existing Account if [create new account] is blank" do
-      expect {
+      expect do
         @contact.update_with_account_and_permissions(
-        account: { name: "" },
-        contact: { first_name: "Billy" }
-      )
-      }.not_to change(Account, :count)
+          account: { name: "" },
+          contact: { first_name: "Billy" }
+        )
+      end.not_to change(Account, :count)
       expect(@contact.account).to eq(nil)
       expect(@contact.first_name).to eq("Billy")
     end
 
     it "should drop existing Account if [-- None --] is selected from list of accounts" do
-      expect {
+      expect do
         @contact.update_with_account_and_permissions(
-        account: { id: "" },
-        contact: { first_name: "Billy" }
-      )
-      }.not_to change(Account, :count)
+          account: { id: "" },
+          contact: { first_name: "Billy" }
+        )
+      end.not_to change(Account, :count)
       expect(@contact.account).to eq(nil)
+      expect(@contact.first_name).to eq("Billy")
+    end
+
+    it "should change account if entered name of another account was found" do
+      @another_account = create(:account, name: "Another name")
+      expect do
+        @contact.update_with_account_and_permissions(
+          account: { name: "Another name" },
+          contact: { first_name: "Billy" }
+        )
+      end.not_to change(Account, :count)
+      expect(@contact.account).to eq(@another_account)
       expect(@contact.first_name).to eq("Billy")
     end
   end
 
   describe "Attach" do
     before do
-      @contact = FactoryGirl.create(:contact)
+      @contact = create(:contact)
     end
 
     it "should return nil when attaching existing asset" do
-      @task = FactoryGirl.create(:task, asset: @contact, user: current_user)
-      @opportunity = FactoryGirl.create(:opportunity)
+      @task = create(:task, asset: @contact)
+      @opportunity = create(:opportunity)
       @contact.opportunities << @opportunity
 
       expect(@contact.attach!(@task)).to eq(nil)
@@ -112,8 +123,8 @@ describe Contact do
     end
 
     it "should return non-empty list of attachments when attaching new asset" do
-      @task = FactoryGirl.create(:task, user: current_user)
-      @opportunity = FactoryGirl.create(:opportunity)
+      @task = create(:task)
+      @opportunity = create(:opportunity)
 
       expect(@contact.attach!(@task)).to eq([@task])
       expect(@contact.attach!(@opportunity)).to eq([@opportunity])
@@ -122,11 +133,11 @@ describe Contact do
 
   describe "Discard" do
     before do
-      @contact = FactoryGirl.create(:contact)
+      @contact = create(:contact)
     end
 
     it "should discard a task" do
-      @task = FactoryGirl.create(:task, asset: @contact, user: current_user)
+      @task = create(:task, asset: @contact)
       expect(@contact.tasks.count).to eq(1)
 
       @contact.discard!(@task)
@@ -135,7 +146,7 @@ describe Contact do
     end
 
     it "should discard an opportunity" do
-      @opportunity = FactoryGirl.create(:opportunity)
+      @opportunity = create(:opportunity)
       @contact.opportunities << @opportunity
       expect(@contact.opportunities.count).to eq(1)
 
@@ -147,16 +158,16 @@ describe Contact do
 
   describe "Exportable" do
     describe "assigned contact" do
-      let(:contact1) { FactoryGirl.build(:contact, user: FactoryGirl.create(:user), assignee: FactoryGirl.create(:user)) }
-      let(:contact2) { FactoryGirl.build(:contact, user: FactoryGirl.create(:user, first_name: nil, last_name: nil), assignee: FactoryGirl.create(:user, first_name: nil, last_name: nil)) }
+      let(:contact1) { build(:contact, assignee: create(:user)) }
+      let(:contact2) { build(:contact, user: create(:user, first_name: nil, last_name: nil), assignee: create(:user, first_name: nil, last_name: nil)) }
       it_should_behave_like("exportable") do
         let(:exported) { [contact1, contact2] }
       end
     end
 
     describe "unassigned contact" do
-      let(:contact1) { FactoryGirl.build(:contact, user: FactoryGirl.create(:user), assignee: nil) }
-      let(:contact2) { FactoryGirl.build(:contact, user: FactoryGirl.create(:user, first_name: nil, last_name: nil), assignee: nil) }
+      let(:contact1) { build(:contact, assignee: nil) }
+      let(:contact2) { build(:contact, user: create(:user, first_name: nil, last_name: nil), assignee: nil) }
       it_should_behave_like("exportable") do
         let(:exported) { [contact1, contact2] }
       end
@@ -168,8 +179,8 @@ describe Contact do
   end
 
   describe "text_search" do
-    before(:each) do
-      @contact = FactoryGirl.create(:contact, first_name: "Bob", last_name: "Dillion", email: 'bob_dillion@example.com', phone: '+1 123 456 789')
+    before do
+      @contact = create(:contact, first_name: "Bob", last_name: "Dillion", email: 'bob_dillion@example.com', phone: '+1 123 456 789')
     end
 
     it "should search first_name" do
@@ -197,7 +208,7 @@ describe Contact do
     end
 
     it "should not break with a single quote" do
-      contact2 = FactoryGirl.create(:contact, first_name: "Shamus", last_name: "O'Connell", email: 'bob_dillion@example.com', phone: '+1 123 456 789')
+      contact2 = create(:contact, first_name: "Shamus", last_name: "O'Connell", email: 'bob_dillion@example.com', phone: '+1 123 456 789')
       expect(Contact.text_search("O'Connell")).to eq([contact2])
     end
 
